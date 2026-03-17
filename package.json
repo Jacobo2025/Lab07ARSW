@@ -10,10 +10,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.11.2",
     "@stomp/stompjs": "7.2.0",
+    "axios": "^1.13.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "socket.io-client": "4.8.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.13.1",
+    "reselect": "^5.1.1",
+    "socket.io-client": "^4.8.3",
     "sockjs-client": "1.6.1"
   },
   "devDependencies": {

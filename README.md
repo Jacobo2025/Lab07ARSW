@@ -175,3 +175,154 @@ En la interfaz: selecciona **Socket.IO** o **STOMP**, define `author` y `name`, 
 
 ## 📄 Licencia
 MIT (o la definida por el curso/equipo).
+
+
+--- 
+
+# INFORME DE LABORATORIO
+
+**AUTORES:**
+- *Jacobo Diaz Alvarado*
+- *Santiago Carmona Pineda*
+
+## Entendiendo Sockets.IO
+
+Se eligió `Socket.IO(Node.js)` porque es más fácil de levantar; simplemente hay que ejecutar `npm i` y `npm run dev`sin tener que configurar *Spring WebSocket*. Además, `Socket.IO(Node.js)`tiene menos dependencias, reconexión automátoca y tiene menos latencia percibida en desarrollo.
+
+## Decisiones RT
+
+- **Sala/room:** `blueprints.{author}.{name}`
+- **Payload de punto:** `{ x, y }`
+- Cada plano tiene su propia sala — dibujar en `juan/plano-1` no afecta `ana/plano-2`
+
+
+## PARTE I
+
+### Creación de `realtimeService.js`
+
+Encapsula toda la lógica de Socket.IO:
+```js
+import { io } from 'socket.io-client'
+
+let socket = null
+
+export function connectSocketIO(baseUrl) {
+  if (socket) socket.disconnect()
+  socket = io(baseUrl, { transports: ['websocket'] })
+  socket.on('connect', () => console.log('[RT] conectado:', socket.id))
+  socket.on('disconnect', () => console.log('[RT] desconectado'))
+}
+
+export function disconnectSocketIO() {
+  if (socket) { socket.disconnect(); socket = null }
+}
+
+export function joinRoom(author, name) {
+  if (!socket) return
+  const room = `blueprints.${author}.${name}`
+  socket.emit('join-room', room)
+  console.log('[RT] join-room:', room)
+}
+
+export function sendPoint(author, name, point) {
+  if (!socket) return
+  socket.emit('draw-event', { room: `blueprints.${author}.${name}`, author, name, point })
+}
+
+export function onBlueprintUpdate(callback) {
+  if (!socket) return
+  socket.on('blueprint-update', callback)
+}
+
+export function offBlueprintUpdate() {
+  if (!socket) return
+  socket.off('blueprint-update')
+}
+```
+
+### Refactorización de `InteractiveCanvas.jsx`
+
+Se agregaron las props `author`, `name` y `rtMode`, y se emite el punto al servidor al hacer clic:
+```js
+import { sendPoint } from '../services/realtimeService.js'
+
+export default function InteractiveCanvas({ initialPoints = [], onSave, 
+  width = 520, height = 360, author, name, rtMode }) {
+
+  const handleClick = (e) => {
+    // ...cálculo de coordenadas
+    const point = { x, y }
+    setPoints(prev => [...prev, point])
+    if (rtMode === 'socketio') {
+      sendPoint(author, name, point)
+    }
+  }
+}
+```
+
+### Refactorización de `BlueprintsPage.jsx`
+
+Se agregó el selector RT, el `useEffect` de conexión y la lógica de `openBlueprint`:
+```js
+import { connectSocketIO, disconnectSocketIO, joinRoom,
+         sendPoint, onBlueprintUpdate, offBlueprintUpdate } from '../services/realtimeService.js'
+
+const [rtMode, setRtMode] = useState('none')
+
+useEffect(() => {
+  if (rtMode === 'socketio') {
+    connectSocketIO(import.meta.env.VITE_IO_BASE)
+  } else {
+    disconnectSocketIO()
+  }
+  return () => disconnectSocketIO()
+}, [rtMode])
+
+const openBlueprint = (bp) => {
+  setLastOpenedBp(bp)
+  dispatch(fetchBlueprint({ author: bp.author, name: bp.name }))
+  if (rtMode === 'socketio') {
+    offBlueprintUpdate()
+    joinRoom(bp.author, bp.name)
+    onBlueprintUpdate((upd) => {
+      dispatch(appendPoint({ author: upd.author, name: upd.name, point: upd.points.at(-1) }))
+    })
+  }
+}
+```
+
+Selector RT en el JSX:
+```jsx
+<select className="input" value={rtMode} onChange={e => setRtMode(e.target.value)}>
+  None
+  Socket.IO
+
+```
+
+### Refactorización de `blueprintsSlice.js`
+
+Se agregó el reducer `appendPoint` para recibir puntos remotos y actualizar el estado:
+```js
+reducers: {
+  appendPoint: (state, action) => {
+    const { author, name, point } = action.payload
+    const items = state.byAuthor[author]
+    if (items) {
+      const bp = items.find(b => b.name === name)
+      if (bp) bp.points = [...(bp.points || []), point]
+    }
+    if (state.current?.author === author && state.current?.name === name) {
+      state.current.points = [...(state.current.points || []), point]
+    }
+  },
+},
+
+export const { appendPoint } = slice.actions
+```
+
+### Creación de `.env.local`
+```bash
+VITE_API_BASE=http://localhost:8080
+VITE_IO_BASE=http://localhost:3001
+VITE_USE_MOCK=false
+```
