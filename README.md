@@ -326,3 +326,14 @@ VITE_API_BASE=http://localhost:8080
 VITE_IO_BASE=http://localhost:3001
 VITE_USE_MOCK=false
 ```
+
+## PARTE II
+
+## Casos de prueba
+
+1. Abrir dos pestañas en `localhost:5173`
+2. En ambas seleccionar **Socket.IO** y abrir el mismo plano
+3. Dibujar en una pestaña → los puntos aparecen en la otra en < 1s
+4. Verificar en consola: `[RT] join-room: blueprints.{autor}.{nombre}` igual en ambas
+
+
