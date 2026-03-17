@@ -336,4 +336,25 @@ VITE_USE_MOCK=false
 3. Dibujar en una pestaña → los puntos aparecen en la otra en < 1s
 4. Verificar en consola: `[RT] join-room: blueprints.{autor}.{nombre}` igual en ambas
 
+---
 
+## Forma de ejecutarlo
+
+1. Descomprimir `Lab05ARSW.zip` y ejecutar el backend CRUD con:
+```bash
+   cd Lab05ARSW
+   mvn spring-boot:run
+```
+
+2. Descomprimir `example-backend-socketio-node-.zip` y ejecutar el backend de tiempo real con:
+```bash
+   cd example-backend-socketio-node-
+   npm i
+   npm run dev
+```
+
+3. Ejecutar el frontend con:
+```bash
+   npm i
+   npm run dev
+```
