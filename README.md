@@ -358,3 +358,11 @@ VITE_USE_MOCK=false
    npm i
    npm run dev
 ```
+---
+
+## PARTE III
+
+**Video demostración de realtime**
+
+Este se encuentra en la carpeta `video`.
+
