@@ -189,6 +189,21 @@ MIT (o la definida por el curso/equipo).
 
 Se eligió `Socket.IO(Node.js)` porque es más fácil de levantar; simplemente hay que ejecutar `npm i` y `npm run dev`sin tener que configurar *Spring WebSocket*. Además, `Socket.IO(Node.js)`tiene menos dependencias, reconexión automátoca y tiene menos latencia percibida en desarrollo.
 
+### Comparativa breve: Socket.IO vs STOMP
+
+| Criterio | Socket.IO (Node.js) | STOMP (Spring) |
+|---|---|---|
+| Dificultad de setup | Baja: `npm i` + `npm run dev` | Media: requiere configurar broker/endpoints WS en Spring |
+| Integración con este front | Directa (ya implementada en `realtimeService.js`) | Requiere activar flujo STOMP en UI y suscripción por tópico |
+| Latencia percibida en desarrollo | Baja y estable para broadcast por room | Similar, pero depende más de configuración del broker |
+| Reconexión y ergonomía cliente | Muy simple, reconexión integrada en `socket.io-client` | Flexible y estándar, con más configuración inicial |
+| Acoplamiento tecnológico | Más orientado a ecosistema JS/Node | Mejor interoperabilidad en ecosistemas enterprise |
+
+#### Punto 3 — Conclusión de la comparativa
+
+Para este laboratorio se seleccionó **Socket.IO** por velocidad de implementación, menor fricción en pruebas multi‑pestaña y una curva de configuración más corta.
+Si el proyecto creciera hacia integración empresarial o mensajería más estandarizada entre plataformas, **STOMP** sería una opción más fuerte por su interoperabilidad y modelo de tópicos.
+
 ## Decisiones RT
 
 - **Sala/room:** `blueprints.{author}.{name}`
